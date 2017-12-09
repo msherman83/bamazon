@@ -1,0 +1,23 @@
+{
+  "name": "bamazon",
+  "version": "1.0.0",
+  "description": "An Amazon like node app that manages inventory with MySQL.",
+  "main": "bamazonCustomer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msherman83/bamazon.git"
+  },
+  "author": "Mike Sherman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/msherman83/bamazon/issues"
+  },
+  "homepage": "https://github.com/msherman83/bamazon#readme",
+  "dependencies": {
+    "inquirer": "^4.0.1",
+    "mysql": "^2.15.0"
+  }
+}
