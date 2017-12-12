@@ -1,7 +1,11 @@
 // TO DO
 //prompt 
+// ORDER
 // The first should ask them the ID of the product they would like to buy.
 // The second message should ask how many units of the product they would like to buy.
+
+// Check if there is enough stock.  If not display message that there isnt enough stock and restart app.
+// If there is enough stock it should subtract from the stock and display order total.
 
 
 
@@ -17,7 +21,7 @@ var connection = mysql.createConnection({
     user: "root",
 
     // Your password
-    password: "Qwerty_123",
+    password: "",
     database: "bamazon"
 });
 
@@ -25,7 +29,7 @@ connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
 
-    initialInventory()
+    initialInventory();
 });
 
 
@@ -50,41 +54,126 @@ function initialInventory() {
 
 
 
-// GETTING UNDEFINED WHEN ENTERING NUMBER FOR FIRST PROMPT
-//  Also tried removing the if statement for isNaN and entering a string and still getting undefined.
-
 function buyPrompt() {
-    inquirer
-        .prompt({
-            name: "id",
-            type: "input",
-            message: "What is the ID of a product you would like to bid on?",
-            validate: function (value) {
-                if (isNaN(value) === false) {
-                    return true;
+    connection.query("SELECT * FROM products", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt({
+                name: "itemNum",
+                type: "input",
+                message: "What is the ID of a product you would like to buy?",
+                validate: function (value) {
+                    if (isNaN(value) === false) {
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        },
-        {
-            name: "units",
-            type: "input",
-            message: "How many units would you like to buy?",
-            validate: function (value) {
-                if (isNaN(value) === false) {
-                    return true;
+            },
+            {
+                name: "units",
+                type: "input",
+                message: "How many units would you like to buy?",
+                validate: function (value) {
+                    if (isNaN(value) === false) {
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
 
-        })
-        .then(function (answer) {
-            var query = "SELECT id FROM products";
-            connection.query(query, [answer.id, answer.units], function (err, res) {
+            })
+            .then(function (answer) {
+                
+                var chosenItem = answer.itemNum;
+                var product = results[chosenItem];
+                var chosenUnits = answer.units;
 
-                console.log(res);
+                if (chosenUnits <= product.stock_quantity) {
+
+                    console.log("it worked!");
+
+                    // if stock_quantity - units is >= 0 subtract units from stock_quanity.  Update stock_quantity in the DB and console.log the order total.
 
 
-            });
-        });
-}
+                    connection.end();
+
+                } else {
+                    console.log("try again")
+                    connection.end();
+                }
+
+                // var query = "SELECT ? FROM products WHERE ?";
+
+                // connection.query(query, [{ item_id: answer.itemNum, stock_quantity: answer.units }], function (err, res) {
+
+                //     console.log(res);
+
+
+                });
+            })
+//     })
+ }
+
+
+
+// function buyPrompt() {
+//     // query the database for all items being auctioned
+//     connection.query("SELECT * FROM products", function(err, results) {
+//       if (err) throw err;
+//       // once you have the items, prompt the user for which they'd like to bid on
+//       inquirer
+//         .prompt([
+//           {
+//             name: "choice",
+//             type: "rawlist",
+//             choices: function() {
+//               var choiceArray = [];
+//               for (var i = 0; i < results.length; i++) {
+//                 choiceArray.push(results[i].item_id);
+//               }
+//               return choiceArray;
+//             },
+//             message: "What is the product ID of the item you would like to buy?"
+//           },
+//           {
+//             name: "bid",
+//             type: "input",
+//             message: "How many would you like to buy?"
+//           }
+//         ])
+//         .then(function(answer) {
+//           // get the information of the chosen item
+//           var chosenItem;
+//           for (var i = 0; i < results.length; i++) {
+//             if (results[i].item_id === answer.choice) {
+//               chosenItem = results[i];
+//             }
+//           }
+
+//           // determine if bid was high enough
+//           if (chosenItem.stock_quantity - parseInt(answer.bid) < 0) {
+//             // bid was high enough, so update db, let the user know, and start over
+//             connection.query(
+//               "UPDATE products SET ? WHERE ?",
+//               [
+//                 {
+//                   stock_quantity: answer.bid
+//                 },
+//                 {
+//                   item_id: chosenItem.id
+//                 }
+//               ],
+//               function(error) {
+//                 if (error) throw err;
+//                 console.log("Bid placed successfully!");
+//                 initialInventory();
+//               }
+//             );
+//           }
+//           else {
+//             // bid wasn't high enough, so apologize and start over
+//             console.log("Your bid was too low. Try again...");
+//             initialInventory();
+//           }
+//         });
+//     });
+//   })
