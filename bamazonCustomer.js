@@ -21,7 +21,7 @@ var connection = mysql.createConnection({
     user: "root",
 
     // Your password
-    password: "",
+    password: "Qwerty_123",
     database: "bamazon"
 });
 
@@ -58,60 +58,64 @@ function buyPrompt() {
     connection.query("SELECT * FROM products", function (err, results) {
         if (err) throw err;
         inquirer
-            .prompt({
-                name: "itemNum",
-                type: "input",
-                message: "What is the ID of a product you would like to buy?",
-                validate: function (value) {
-                    if (isNaN(value) === false) {
-                        return true;
+            .prompt([
+                {
+                    name: "itemNum",
+                    type: "input",
+                    message: "What is the ID of a product you would like to buy?",
+                    validate: function (value) {
+                        if (isNaN(value) === false) {
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
-                }
-            },
-            {
-                name: "units",
-                type: "input",
-                message: "How many units would you like to buy?",
-                validate: function (value) {
-                    if (isNaN(value) === false) {
-                        return true;
+                },
+                {
+                    name: "units",
+                    type: "input",
+                    message: "How many units would you like to buy?",
+                    validate: function (value) {
+                        if (isNaN(value) === false) {
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
                 }
-
-            })
+            ])
             .then(function (answer) {
-                
-                var chosenItem = answer.itemNum;
+
+                var chosenItem = parseInt(answer.itemNum) - 1;
                 var product = results[chosenItem];
-                var chosenUnits = answer.units;
+                var chosenUnits = parseInt(answer.units);
+                console.log("product - " + product.stock_quantity + " type of " + typeof product.stock_quantity);
+                console.log("chosenItem - " + chosenItem + " type of " + typeof chosenItem);
+                console.log("chosenUnits - " + chosenUnits + " type of " + typeof chosenUnits)
+                console.log(chosenUnits <= product.stock_quantity);
 
-                if (chosenUnits <= product.stock_quantity) {
+                var updatedStock = product.stock_quantity - chosenUnits;
+                if (chosenUnits > product.stock_quanity) {
 
-                    console.log("it worked!");
+                    connection.query(
+                        "UPDATE products SET ? WHERE ?",
+                        [
+                            {
+                                stock_quantity: updatedStock
+                            },
+                            {
+                                item_id: chosenItem
+                            }
+                        ]
+                    );
+                
+                    process.exit();
 
-                    // if stock_quantity - units is >= 0 subtract units from stock_quanity.  Update stock_quantity in the DB and console.log the order total.
-
-
-                    connection.end();
-
-                } else {
-                    console.log("try again")
-                    connection.end();
-                }
-
-                // var query = "SELECT ? FROM products WHERE ?";
-
-                // connection.query(query, [{ item_id: answer.itemNum, stock_quantity: answer.units }], function (err, res) {
-
-                //     console.log(res);
-
-
-                });
-            })
-//     })
- }
+                // } else {
+                //     console.log("try again")
+                //     connection.end(); 
+                } 
+            });
+    })
+}
 
 
 
