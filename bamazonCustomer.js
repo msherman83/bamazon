@@ -21,7 +21,7 @@ var connection = mysql.createConnection({
     user: "root",
 
     // Your password
-    password: "Qwerty_123",
+    password: "",
     database: "bamazon"
 });
 
@@ -47,6 +47,8 @@ function initialInventory() {
         for (var i = 0; i < res.length; i++) {
             console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].department_name + " | " + res[i].price + " | " + res[i].stock_quantity);
         }
+        console.log("=====================================================================")
+        console.log("=====================================================================")
 
         buyPrompt();
     });
@@ -83,17 +85,23 @@ function buyPrompt() {
                 }
             ])
             .then(function (answer) {
+                // When i select an ID and product.  Its taking the correct ID and converting it to whatever the NEXT IDs product quantity is, subtracting the number of units to buy and putting it in the place of the actual ID you selected.
 
-                var chosenItem = parseInt(answer.itemNum) - 1;
-                var product = results[chosenItem];
+
+                var chosenItem = parseInt(answer.itemNum); // tried to do a - 1 here but it didnt work.
+                var product = results[chosenItem]; // What is product pulling its number from?
                 var chosenUnits = parseInt(answer.units);
-                console.log("product - " + product.stock_quantity + " type of " + typeof product.stock_quantity);
+                
+                // console.log hell
                 console.log("chosenItem - " + chosenItem + " type of " + typeof chosenItem);
+                console.log("product - " + product.stock_quantity + " type of " + typeof product.stock_quantity);
                 console.log("chosenUnits - " + chosenUnits + " type of " + typeof chosenUnits)
                 console.log(chosenUnits <= product.stock_quantity);
 
+                // var updatedProduct = product - 1;
+
                 var updatedStock = product.stock_quantity - chosenUnits;
-                if (chosenUnits > product.stock_quanity) {
+                if (chosenUnits <= product.stock_quantity) {
 
                     connection.query(
                         "UPDATE products SET ? WHERE ?",
@@ -106,12 +114,15 @@ function buyPrompt() {
                             }
                         ]
                     );
-                
-                    process.exit();
 
-                // } else {
-                //     console.log("try again")
-                //     connection.end(); 
+                    console.log("===== Receipt of Purchase =====");
+                    console.log("Quantity: " + chosenUnits + " | Total Cost: " + product.price * chosenUnits)
+                
+                    initialInventory();
+
+                } else {
+                    console.log("Not enough inventory!  Please order again.")
+                    initialInventory();
                 } 
             });
     })
@@ -119,65 +130,3 @@ function buyPrompt() {
 
 
 
-// function buyPrompt() {
-//     // query the database for all items being auctioned
-//     connection.query("SELECT * FROM products", function(err, results) {
-//       if (err) throw err;
-//       // once you have the items, prompt the user for which they'd like to bid on
-//       inquirer
-//         .prompt([
-//           {
-//             name: "choice",
-//             type: "rawlist",
-//             choices: function() {
-//               var choiceArray = [];
-//               for (var i = 0; i < results.length; i++) {
-//                 choiceArray.push(results[i].item_id);
-//               }
-//               return choiceArray;
-//             },
-//             message: "What is the product ID of the item you would like to buy?"
-//           },
-//           {
-//             name: "bid",
-//             type: "input",
-//             message: "How many would you like to buy?"
-//           }
-//         ])
-//         .then(function(answer) {
-//           // get the information of the chosen item
-//           var chosenItem;
-//           for (var i = 0; i < results.length; i++) {
-//             if (results[i].item_id === answer.choice) {
-//               chosenItem = results[i];
-//             }
-//           }
-
-//           // determine if bid was high enough
-//           if (chosenItem.stock_quantity - parseInt(answer.bid) < 0) {
-//             // bid was high enough, so update db, let the user know, and start over
-//             connection.query(
-//               "UPDATE products SET ? WHERE ?",
-//               [
-//                 {
-//                   stock_quantity: answer.bid
-//                 },
-//                 {
-//                   item_id: chosenItem.id
-//                 }
-//               ],
-//               function(error) {
-//                 if (error) throw err;
-//                 console.log("Bid placed successfully!");
-//                 initialInventory();
-//               }
-//             );
-//           }
-//           else {
-//             // bid wasn't high enough, so apologize and start over
-//             console.log("Your bid was too low. Try again...");
-//             initialInventory();
-//           }
-//         });
-//     });
-//   })
