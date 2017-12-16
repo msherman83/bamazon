@@ -125,7 +125,7 @@ function buyPrompt() {
                     initialInventory();
 
                 } else {
-                    console.log("Not enough inventory!  Please order again.")
+                    console.log("\nNot enough inventory!  Please order again.\n\n")
 
                     // Loop back to initial inventory screen.
                     initialInventory();
